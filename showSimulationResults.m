@@ -80,3 +80,23 @@ cfg.commentpos = [-1 0.7];
 ft_topoplotTFR(cfg, TFR); 
 ch = colorbar;
 ch.Label.String = '\Delta Power (db)';
+
+%%%%%%%%%%%%%%% Prelim codes for source localization %%%%%%%%%%%%%%%%%%%%%%
+% Get source data for one subject
+dataStr = 'mid';
+folderLORETA = 'N:\Projects\Kanishka_SourceLocalizationProject\data\sLORETA_Thres10';
+freqRangePos = 2; % 1 - alpha, 2, - SG, 3 - FG
+cLims = [-1 2];
+
+sourceData = load(fullfile(folderLORETA,dataStr,[subjectName '.mat']));
+% mData = sourceData.tStats;
+mData = 10*(log10(sourceData.mDataST) - log10(sourceData.mDataBL));
+dataToPlot = mData(freqRangePos,:);
+
+%%%%%%%%%%%%%%%%%%%%%% Source Localization Analysis %%%%%%%%%%%%%%%%%%%%%%%
+[posList,xyz,areaList] = getVoxelInfo;
+
+subplot(221)
+scatter3(xyz(:,1),xyz(:,2),xyz(:,3),10,dataToPlot); 
+clim(cLims);
+colorbar
