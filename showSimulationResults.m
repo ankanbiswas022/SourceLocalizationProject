@@ -2,11 +2,12 @@
 
 % Choose subject
 subjectName = '204NC'; % '463NR' - has huge fast gamma
-folderName = 'N:\Projects\TLSAEEGProject\ftData\'; 
+folderName  = 'N:\Projects\TLSAEEGProject\ftData\'; 
 
 %%%%%%%%%%%%%%%%%%%% Get signal in time domain %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 projectName = 'ADGammaProject';
 protocolType = 'SF_ORI';
+freqRange = [20 35]; % slow gamma freq range
 
 [expDates,protocolNames,capLayout,usableDataFlag] = getProtocolDetailsForAnalysis(projectName,subjectName,protocolType);
 
@@ -23,7 +24,7 @@ while(1)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Plot TF spectrum %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subplot(441);
+hfig=getPlotHandles(4,4,[0.1 0.1 0.8 0.8],0.05,0.05);
 %%%%%%%%%%%%%%%%%%%%%%% Time-frequency representation %%%%%%%%%%%%%%%%%%%%%
 windowLenS       = 0.25; % Seconds
 cfg              = [];
@@ -42,22 +43,40 @@ cfg.baseline     = [-0.5 0];
 cfg.baselinetype = 'db';
 cfg.showlabels   = 'yes';
 cfg.layout       = data.elec;
+cfg.rotate       = 90;
 cfg.box          = 'yes';
 cfg.colormap     = 'jet';
-ft_multiplotTFR(cfg,TFR);
+% ft_multiplotTFR(cfg,TFR);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%% Plot Topoplot %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% % Topoplots
-% noseDir = '+X';
-% chanlocs = getMontageDetails(refType);
-% numGroups = length(subjectNameListFinal);
-% for i=1:numGroups
-%     axes(hPlots(1+i)); %#ok<LAXES>
-%     x = topoData{i};
-%     x(isnan(x)) = 999;
-%     topoplot_murty(x,chanlocs,'electrodes','off','style','blank','drawaxis','off','nosedir',noseDir,'emarkercolors',x);
-%     caxis(cLims);
-%     title(strList{i});
-% end
-% displayData(hPlots(i,:),subjectNameList,strList,deltaPSD,dataForDisplay.freqVals,topoData,sourceData,dataForDisplay.rangeNames{i},refType,useMedianFlag);
+%%%%%%%%%%%%%%%%%%%%%%%%%% Plot TF plot(high priority electrodes) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+axes(hfig(1,1));
+cfg.figure = gca;
+gridType = 'EEG';
+capType  = 'actiCap64';
+load([capType 'Labels.mat']);
+[~,~,~,~,~,highPriorityElectrodeNums] = electrodePositionOnGrid(1,gridType,[],capType);
+selectedChannels = montageLabels(highPriorityElectrodeNums,2);
+cfg.channel = selectedChannels;
+cfg.xlim         = [-0.5 0.75];
+cfg.ylim         = [0 100];
+ft_singleplotTFR(cfg, TFR);
+xlabel('Time (s)');
+ylabel('Frequency (Hz)');
+ch= colorbar;
+ch.Label.String = '\Delta Power (db)';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%% Plot Topoplot (high priority electrodes) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+axes(hfig(1,2));
+cfg.figure = gca;
+cfg.channel = 'all';
+cfg.fontsize = 8;
+cfg.xlim = [0.25 0.75]; %st period
+cfg.ylim = freqRange; 
+cfg.interactive = 'no';
+cfg.comment =  'auto';
+cfg.shading = 'interp';
+cfg.commentpos = [-1 0.7];
+ft_topoplotTFR(cfg, TFR); 
+ch = colorbar;
+ch.Label.String = '\Delta Power (db)';
