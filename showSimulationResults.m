@@ -2,29 +2,42 @@
 
 % Choose subject
 subjectName = '204NC'; % '463NR' - has huge fast gamma
-folderName  = 'N:\Projects\TLSAEEGProject\ftData\'; 
 
-%%%%%%%%%%%%%%%%%%%% Get signal in time domain %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-projectName = 'ADGammaProject';
-protocolType = 'SF_ORI';
-freqRange = [20 35]; % slow gamma freq range
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Get data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fileName = fullfile('prepDataSourceModel',[subjectName '.mat']);
 
-[expDates,protocolNames,capLayout,usableDataFlag] = getProtocolDetailsForAnalysis(projectName,subjectName,protocolType);
+if exist(fileName,'file')
+    tmp = load(fileName);
+    data = tmp.data;
+else
+    % If the file does not exist, it is created and saved. Need access to
+    % the original data for this
 
-%%%%%%% Instead of concatenating, just find the first good protocol %%%%%%%
-iProt = 1;
-while(1)
-    x = load(fullfile(folderName,projectName,protocolType,[subjectName '-' expDates{iProt} '-' protocolNames{iProt}]));
-    if (x.goodProtFlag)
-        data = x.data;
-        break;
-    else
-        iProt = iProt+1;
+    folderName  = 'N:\Projects\TLSAEEGProject\ftData\';
+
+    %%%%%%%%%%%%%%%%%%%% Get signal in time domain %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    projectName = 'ADGammaProject';
+    protocolType = 'SF_ORI';
+
+    [expDates,protocolNames,capLayout,usableDataFlag] = getProtocolDetailsForAnalysis(projectName,subjectName,protocolType);
+
+    %%%%%%% Instead of concatenating, just find the first good protocol %%%%%%%
+    iProt = 1;
+    while(1)
+        x = load(fullfile(folderName,projectName,protocolType,[subjectName '-' expDates{iProt} '-' protocolNames{iProt}]));
+        if (x.goodProtFlag)
+            data = x.data;
+            break;
+        else
+            iProt = iProt+1;
+        end
     end
+    save(fileName,'data');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Plot TF spectrum %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 hfig=getPlotHandles(4,4,[0.1 0.1 0.8 0.8],0.05,0.05);
+
 %%%%%%%%%%%%%%%%%%%%%%% Time-frequency representation %%%%%%%%%%%%%%%%%%%%%
 windowLenS       = 0.25; % Seconds
 cfg              = [];
@@ -67,6 +80,8 @@ ch= colorbar;
 ch.Label.String = '\Delta Power (db)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Plot Topoplot (high priority electrodes) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+freqRange = [20 35]; % slow gamma freq range
+
 axes(hfig(1,2));
 cfg.figure = gca;
 cfg.channel = 'all';
@@ -96,7 +111,7 @@ dataToPlot = mData(freqRangePos,:);
 %%%%%%%%%%%%%%%%%%%%%% Source Localization Analysis %%%%%%%%%%%%%%%%%%%%%%%
 [posList,xyz,areaList] = getVoxelInfo;
 
-subplot(221)
+axes(hfig(1,3));
 scatter3(xyz(:,1),xyz(:,2),xyz(:,3),10,dataToPlot); 
 clim(cLims);
 colorbar

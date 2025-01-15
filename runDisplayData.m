@@ -16,7 +16,7 @@
 
 clear; clc;
 
-thres=0; % only subjects who have delta power above this (in dB) are selected. Set to a low value such as -inf to take all subjects
+thres=-inf; % only subjects who have delta power above this (in dB) are selected. Set to a low value such as -inf to take all subjects
 useCommonSubjectsFlag=1; % if set to 1, only subjects for which delta power is more than threshold for all frequencies are chosen
 useMedianFlag=1;
 

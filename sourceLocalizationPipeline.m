@@ -8,40 +8,54 @@
 % - Time-frequency analysis
 % - Source reconstruction (using DICS and eLoreta)
 
-addpath('pwd','prepDataSourceModel');
+folderSave = 'prepDataSourceModel'; % All data is saved here
+addpath(fullfile(pwd,folderSave));
 
-% Load and preprocess MRI data
-load mri_segmented.mat
-cfg = [];
-mri_resliced_segmented = ft_volumereslice(cfg, mri_segmented);
-seg_i = ft_datatype_segmentation(mri_resliced_segmented, 'segmentationstyle', 'indexed');
+%%%%%%%%%%%%%%%%%% Get boundary meshes if not available %%%%%%%%%%%%%%%%%%%
+fileName = fullfile(folderSave,'bnd.mat');
 
-% Configure initial visualization
-cfg = [];
-cfg.funparameter = 'seg';
-cfg.funcolormap = gray(4);     % Distinct color per tissue
-cfg.location = 'center';
-cfg.atlas = seg_i;
-cfg.resolution = 1;
+if exist(fileName,'file')
+    tmp = load(fileName);
+    bnd = tmp.bnd;
+else
 
-% Create boundary meshes
-cfg = [];
-cfg.tissue = {'brain', 'skull', 'scalp'};
-cfg.numvertices = [1000 1000 1000];
-bnd = ft_prepare_mesh(cfg, mri_segmented);
-save bnd.mat bnd
+    % Load and preprocess MRI data
+    load mri_segmented.mat
+    cfg = [];
+    mri_resliced_segmented = ft_volumereslice(cfg, mri_segmented);
+    seg_i = ft_datatype_segmentation(mri_resliced_segmented, 'segmentationstyle', 'indexed');
 
-% Load and visualize electrodes with mesh
-load electrode
+    % Configure initial visualization
+    cfg = [];
+    cfg.funparameter = 'seg';
+    cfg.funcolormap = gray(4);     % Distinct color per tissue
+    cfg.location = 'center';
+    cfg.atlas = seg_i;
+    cfg.resolution = 1;
+
+    % Create boundary meshes
+    cfg = [];
+    cfg.tissue = {'brain', 'skull', 'scalp'};
+    cfg.numvertices = [1000 1000 1000];
+    bnd = ft_prepare_mesh(cfg, mri_segmented);
+    save(fileName,'bnd');
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Get Electrode Locations %%%%%%%%%%%%%%%%%%%%%%
+fileName = fullfile(folderSave,'electrode.mat');
+
+if exist(fileName,'file')
+    tmp = load(fileName);
+    elec = tmp.elec;
+else
+    % Write the code to generate the variable elec from Montage data
+end
+
 figure;
-ft_plot_mesh(bnd(1), 'surfaceonly', 'yes', 'vertexcolor', 'none', ...
-    'facecolor', 'r', 'facealpha', 0.5, 'edgealpha', 0.1);
-ft_plot_mesh(bnd(2), 'surfaceonly', 'yes', 'vertexcolor', 'none', ...
-    'facecolor', 'g', 'facealpha', 0.5, 'edgealpha', 0.1);
-ft_plot_mesh(bnd(3), 'surfaceonly', 'yes', 'vertexcolor', 'none', ...
-    'facecolor', 'b', 'facealpha', 0.5, 'edgealpha', 0.1);
+ft_plot_mesh(bnd(1), 'facecolor','none');
+ft_plot_mesh(bnd(2), 'facecolor','none');
+ft_plot_mesh(bnd(3), 'facecolor','none');
 hold on;
-ft_plot_sens(elec);
 ft_plot_sens(elec, 'elecshape', 'sphere', 'label', 'on');
 
 % Electrode realignment
