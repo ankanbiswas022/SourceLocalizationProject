@@ -95,8 +95,8 @@ if strcmp(methodSourceLoc,'DICS')
 
     % Calculate normalized source power
     sourceData = sourcePost;
-%    data_sourceNorm.avg.pow = (sourcePost.avg.pow - sourcePre.avg.pow) ./ sourcePre.avg.pow;
-    sourceData.avg.pow = log10(sourcePost.avg.pow) - log10(sourcePre.avg.pow) ;
+%   sourceData.avg.pow = (sourcePost.avg.pow - sourcePre.avg.pow) ./ sourcePre.avg.pow; 
+    sourceData.avg.pow = log10(sourcePost.avg.pow) - log10(sourcePre.avg.pow);
 
     if displayResultsFlag
 
