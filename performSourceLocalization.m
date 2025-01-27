@@ -1,6 +1,6 @@
 % This program performs source localization using fieldtrip
 
-function sourceData = performSourceLocalization(dataPre,dataPost,displayResultsFlag,methodSourceLoc,capType,methodHeadModel,methodSourceModel,commonFilterFlag,freqRange)
+function [sourceData,sourcePre,sourcePost] = performSourceLocalization(dataPre,dataPost,displayResultsFlag,methodSourceLoc,capType,methodHeadModel,methodSourceModel,commonFilterFlag,freqRange)
 
 if ~exist('displayResultsFlag','var');  displayResultsFlag = 0;         end
 if ~exist('methodSourceLoc','var');     methodSourceLoc = 'dics';       end
@@ -58,42 +58,6 @@ sourceData = sourcePost;
 sourceData.avg.pow = 10*(log10(sourcePost.avg.pow) - log10(sourcePre.avg.pow)); % change in power in decibels
 
 if displayResultsFlag
-    % Source Data Visualization - ortho
-    % Interpolate source data onto MRI for visualization
-    tmp = load('mri_orig.mat');
-    mri_orig = tmp.mri;
-    cfg = [];
-    mri_resliced_orig = ft_volumereslice(cfg, mri_orig);
-
-    cfg = [];
-    cfg.downsample = 2;
-    cfg.parameter = 'pow';
-    sourceDataInterp = ft_sourceinterpolate(cfg, sourceData, mri_resliced_orig);
-
-    % Visualize interpolated source data
-    cfg = [];
-    cfg.method = 'ortho';
-    cfg.funparameter = 'pow';
-    cfg.funcolorlim = 'maxabs';
-    cfg.funcolormap = 'jet';        % Use jet colormap for better contrast
-
-    ft_sourceplot(cfg, sourceDataInterp);
-
-    % % Source Data Visualization - surface
-    % cfg = [];
-    % cfg.nonlinear = 'no';
-    % sourceDataSurface = ft_volumenormalise(cfg, sourceDataInterp); % converts to MNI coordinates
-    %
-    % cfg = [];
-    % cfg.method         = 'surface';
-    % cfg.funparameter   = 'pow';
-    % cfg.maskparameter  = cfg.funparameter;
-    % cfg.funcolormap    = 'jet';
-    % cfg.opacitymap     = 'rampup';
-    % cfg.projmethod     = 'nearest';
-    % cfg.surffile       = 'surface_white_both.mat';
-    % cfg.surfdownsample = 10;
-    % ft_sourceplot(cfg, sourceDataSurface);
-    % view ([90 0]);
+    displaySourceData(sourceData);
 end
 end
